@@ -1,0 +1,2 @@
+ssh_root_login: "no"
+ssh_x11_forwarding: "no"

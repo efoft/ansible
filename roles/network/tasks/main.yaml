@@ -1,0 +1,16 @@
+- fail: msg="Variable netcfg must be set to either nm (NetworkManager) or ifcfg"
+  when: netcfg not in ['nm','ifcfg']
+
+- fail: msg="Variable ipv6 must be set to either yes or no"
+  when: ipv6 not in ['yes','no']
+
+- fail: msg="Variable router must be set to either yes or no"
+  when: router is not defined or router not in ['yes','no']
+
+- fail: msg="Variable firewall must have one of the values - firewalld, iptables, nofirewall"
+  when: firewall is not defined or firewall not in ['firewalld','iptables','nofirewall']
+
+- include: "{{ netcfg }}.yml"
+- include: ipv6.yml
+- include: router.yml
+- include: "{{ firewall }}.yml"

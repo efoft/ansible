@@ -1,0 +1,26 @@
+[connection]
+id={{ item.value.device }}
+{% if item.value.uuid is defined -%}
+uuid={{ item.value.uuid }}
+{% endif -%}
+type=ethernet
+autoconnect=true
+interface-name={{ item.value.device }}
+{% if firewall == 'firewalld' -%}
+zone={{ item.value.zone }}
+{%- endif %}
+
+[ipv4]
+address1={{ item.value.ip }}/{{ item.value.prefix }},{{ item.value.gateway|d('') }}
+dns={{ item.value.dns|join(';') }}
+dns-search=
+method=manual
+route-metric=0
+
+[ipv6]
+dns-search=
+{% if ipv6 == 'yes' -%}
+method=auto
+{% else -%}
+method=ignore
+{% endif -%}

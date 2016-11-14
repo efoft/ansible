@@ -1,0 +1,16 @@
+---
+- name: conditionally set disable_ipv6 variable
+  set_fact:
+    disable_ipv6: "0"
+  when: ipv6 == 'yes'
+
+- name: disable IPv6
+  sysctl:
+    name: "{{ item }}"
+    value: "{{ disable_ipv6 | d(1) }}"
+    state: present
+    sysctl_set: yes
+  with_items:
+    - net.ipv6.conf.default.disable_ipv6
+    - net.ipv6.conf.all.disable_ipv6
+...

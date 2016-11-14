@@ -1,0 +1,36 @@
+---
+- include: managed_interfaces.yml
+
+- name: build the list of all existing configs
+  shell: >
+    ls -1 /etc/sysconfig/network-scripts/ifcfg-* | grep -v 'ifcfg-lo' | cut -f5 -d'/' | cut -f2 -d'-'
+  register: found_configs
+
+- name: remove unmanaged configs
+  file: path=/etc/sysconfig/network-scripts/ifcfg-{{ item }} state=absent
+  with_items: "{{ found_configs.stdout_lines }}"
+  when: item not in managed_interfaces
+  notify:
+    restart network
+
+- name: config for interface "{{ item.value.device }}"
+  template: src=ifcfg.j2 dest=/etc/sysconfig/network-scripts/ifcfg-{{ item.value.device }}
+  with_dict: "{{ network }}"
+  notify:
+    restart network
+
+- meta: flush_handlers
+
+- name: check if NetworkManager service exists
+  shell: >
+    /usr/bin/systemctl list-unit-files | grep NetworkManager.service
+  register: nm_service_exists
+
+- name: stop and disable NM service
+  service: name={{ item }} state=stopped enabled=no
+  with_items:
+    - NetworkManager
+    - NetworkManager-dispatcher
+    - NetworkManager-wait-online
+  when: nm_service_exists.rc == 0
+...

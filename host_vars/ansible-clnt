@@ -1,0 +1,25 @@
+network:
+  intif:
+    device:  ens32
+    uuid:    8f6ca265-82fe-4b79-81ca-dc5c43a3decf
+    ip:      10.1.1.100
+    prefix:  24
+    gateway: 10.1.1.250
+    dns:
+      - 10.1.1.250
+    zone:    internal
+
+netcfg: "nm"
+ipv6: "no"
+router: "no"
+
+# whether to use firewalld or classic iptables
+# values: firewalld, iptables, nofirewall
+firewall: firewalld
+
+vgname: "sysvg"
+
+bacula:
+  is_server: "no"
+  client:
+    director_name: "cula-director"

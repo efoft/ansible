@@ -1,0 +1,68 @@
+---
+- name: ensure firewalld is installed
+  yum: name=firewalld state=installed
+
+- name: firewalld is enabled and running
+  service: name=firewalld enabled=yes state=started
+
+- name: check if iptables service is installed
+  shell: >
+    /usr/bin/systemctl list-unit-files | grep iptables.service
+  register: iptables_service_installed
+  failed_when: iptables_service_installed.rc == 2
+
+- name: iptables is disabled and stopped
+  service: name=iptables enabled=no state=stopped
+  when: iptables_service_installed.rc == 0
+  ignore_errors: True
+
+- name: remove default services from internal firewalld zone
+  firewalld: service={{ item }} zone=internal permanent=true state=disabled
+  with_items:
+    - ipp-client
+    - mdns
+    - samba-client
+  notify:
+    - restart firewalld
+
+# When NetworkManager (with keyfile plugin) is used for network configuration
+# records in ifcfg-... files are ignored upon NM operations/restart so
+# the belongness of the interfaces to zones are lost. To restore it the restart of
+# network service is required. But it also be remediated with zone record in NM keyfile of
+# the system connection. In this case the records in ifcfg-... files are unnessesary.
+- name: put lan connection to internal firewalld zone
+  command: /usr/bin/nmcli connection modify {{ intif }} connection.zone internal
+  when:
+    - intif is defined
+    - use_nm
+
+- name: put wan connection to external firewalld zone
+  command: /usr/bin/nmcli connection modify {{ extif }} connection.zone external
+  when:
+    - extif is defined
+    - use_nm
+
+# Otherwise if NetworkManager is either disabled or is used but with ifcfg-rh plugin
+# it reads configuration parameters from ifcfg-... files, so zone records must be
+# placed in those files.
+- name: place zone=internal record in ifcfg-<intif>
+  lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-{{ intif }} regexp=^ZONE= line=ZONE=internal
+  when:
+    - intif is defined
+    - not use_nm
+  notify:
+    - restart network
+    - restart firewalld
+
+- name: place zone=external record in ifcfg-<extif>
+  lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-{{ extif }} regexp=^ZONE= line=ZONE=external
+  when:
+    - extif is defined
+    - not use_nm
+  notify:
+    - restart network
+    - restart firewalld
+
+- name: set fact firewalld_used
+  set_fact: firewalld_used=True
+...

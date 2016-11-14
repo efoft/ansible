@@ -1,0 +1,10 @@
+---
+- name: install tuned
+  yum: name=tuned state=installed
+
+- name: tuned is enabled and running
+  service: name=tuned enabled=yes state=started
+
+- name: set fact tuned_used
+  set_fact: tuned_used=True
+...

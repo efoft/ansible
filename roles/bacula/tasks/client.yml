@@ -1,0 +1,19 @@
+---
+- name: install bacula-client
+  yum: name=bacula-client state=installed
+
+- name: bacula-client config
+  template: src=bacula-fd.conf.j2 dest=/etc/bacula/bacula-fd.conf owner=root group=bacula mode=0640
+  notify: restart bacula-fd
+
+- name: bacula-fd service enabled and running
+  service: name=bacula-fd enabled=yes state=started
+
+- name: allow connection to bacula via firewalld
+  firewalld: zone=internal port=9102/tcp permanent=true state=enabled
+  when:
+    - intif is defined
+    - firewalld_used is defined
+  notify:
+    - reload firewall
+...

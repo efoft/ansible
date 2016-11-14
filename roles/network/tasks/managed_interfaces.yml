@@ -1,0 +1,12 @@
+---
+- name: enumerate managed network interfaces 
+  shell: >
+    echo "{{ item.value.device | replace(':', '-') }}"
+  with_dict: "{{ network }}"
+  register: enum
+
+- name: build the list of managed network interfaces
+  set_fact:
+    managed_interfaces: "{{ managed_interfaces|d([]) + [ item.stdout ] }}"
+  with_items: "{{ enum.results }}"
+...

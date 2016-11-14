@@ -1,0 +1,17 @@
+---
+
+- hosts: all
+  roles:
+#  - role: common
+#  - role: network
+#  - role: tune
+#  - role: security
+
+#- hosts: mongodb_servers
+#  roles:
+#    - role: mongodb
+
+- hosts: bacula
+  roles:
+    - role: bacula
+...

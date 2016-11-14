@@ -1,0 +1,26 @@
+---
+- name: install sudo
+  yum: name=sudo state=latest
+
+- name: sudo wheel nopasswd
+  copy: src=wheel.sudo.j2 dest=/etc/sudoers.d/wheel owner=root group=root mode="0440"
+
+- name: Check if authconfig did a previous run
+  command: "/bin/egrep '^password.*sufficient.*sha512' /etc/pam.d/system-auth"
+  register: authconfig_run
+  changed_when: false
+  ignore_errors: true
+
+- name: configure password policy
+  command: /usr/sbin/authconfig --passalgo=sha512 --updateall --nostart
+  when: authconfig_run.rc != 0
+  ignore_errors: true
+
+- name: create unprivileged user
+  user:
+    name: "{{ unpriv_user_name }}"
+    password: "{{ unpriv_user_pwd|password_hash('sha512') }}"
+    groups: wheel
+    generate_ssh_key: yes
+    update_password: on_create
+...

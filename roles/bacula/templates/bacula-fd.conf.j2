@@ -1,0 +1,24 @@
+#
+# List Directors who are permitted to contact this File daemon
+#
+Director {
+  Name = "{{ bacula_director_name }}:director"
+  Password = "{{ bacula_client_password }}"
+}
+
+#
+# "Global" File daemon configuration specifications
+#
+FileDaemon {                          # this is me
+  Name = bacula-fd
+  FDport = 9102                  # where we listen for the director
+  WorkingDirectory = /var/spool/bacula
+  Pid Directory = /var/run
+  Maximum Concurrent Jobs = 20
+}
+
+# Send all messages except skipped files back to Director
+Messages {
+  Name = Standard
+  director = "{{ bacula_director_name }}:director" = all, !skipped, !restored
+}

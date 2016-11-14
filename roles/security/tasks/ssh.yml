@@ -1,0 +1,25 @@
+---
+- name: ssh package is latest
+  yum: name=openssh-server state=latest
+
+- name: root login
+  lineinfile: dest=/etc/ssh/sshd_config regexp=^PermitRootLogin line="PermitRootLogin {{ ssh_root_login }}"
+  notify: reload sshd
+
+- name: X11 forwarding
+  lineinfile: dest=/etc/ssh/sshd_config regexp=^X11Forwarding line="X11Forwarding {{ ssh_x11_forwarding }}"
+  notify: reload sshd
+
+- name: ssh hardening
+  lineinfile: dest=/etc/ssh/sshd_config regexp=^{{ item.option }} line="{{ item.option }} {{ item.value }}"
+  with_items:
+    - { option: MaxAuthTries, value: 4 }
+    - { option: Ciphers, value: 'aes128-ctr,aes192-ctr,aes256-ctr' }
+    - { option: MACs, value: 'hmac-sha1,hmac-ripemd160' }
+    - { option: ClientAliveInterval, value: 300 }
+    - { option: ClientAliveCountMax, value: 36 }
+  notify: reload sshd
+
+- name: sshd enabled & running
+  service: name=sshd enabled=yes state=started
+...

@@ -1,0 +1,8 @@
+---
+# what to use for network config: nm or ifcfg
+netcfg: "ifcfg"
+# initialize IPv6: yes,no
+ipv6: "no"
+# if to turn on IP forwarding: yes,no
+router: "no"
+...

@@ -1,0 +1,5 @@
+---
+bacula:
+  is_server: "no"
+  fd_port: "9102"
+...

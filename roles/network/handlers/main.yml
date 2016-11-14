@@ -1,0 +1,16 @@
+---
+- name: restart NM service
+  service: name=NetworkManager state=restarted
+
+- name: nmcli intif connection up
+  command: /usr/bin/nmcli connection up "{{ intif }}"
+
+- name: restart firewalld
+  service: name=firewalld state=restarted
+
+- name: reload firewalld
+  command: /usr/bin/firewall-cmd --reload
+
+- name: restart network
+  service: name=network state=restarted
+...

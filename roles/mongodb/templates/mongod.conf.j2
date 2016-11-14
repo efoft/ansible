@@ -1,0 +1,26 @@
+systemLog:
+  destination: file
+  logAppend: true
+  path: /var/log/mongodb/mongod.log
+
+storage:
+  dbPath: /var/lib/mongo
+  journal:
+    enabled: true
+  engine: {{ mongo_engine }}
+
+processManagement:
+  fork: true  # fork and run in background
+  pidFilePath: /var/run/mongodb/mongod.pid  # location of pidfile
+
+net:
+  port: {{ mongo_port }}
+{% if mongo_listen == 'loopback' %}
+  bindIp: 127.0.0.1
+{% endif %}
+{% if mongo_listen == 'intip' %}
+  bindIp: 127.0.0.1,{{ intip }}
+{% endif %}
+
+security:
+  authorization: {{ mongo_auth }}

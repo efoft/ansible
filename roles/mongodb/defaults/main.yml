@@ -1,0 +1,12 @@
+nproc_soft_limit: 32000
+mongo_port: 27017
+
+# on which IPs to listen: all, intip, loopback
+mongo_listen: all
+
+# # engine: mmapv1, wiredTiger
+mongo_engine: wiredTiger
+
+# # auth
+mongo_auth: disabled
+

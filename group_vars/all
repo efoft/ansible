@@ -1,0 +1,7 @@
+# LVM & filesystems
+vgname: "sysvg"
+fstype: "xfs"
+fsopts: "defaults"
+owner: "root"
+group: "root"
+dirmode: "0755"

@@ -1,0 +1,50 @@
+---
+# All common tasks
+
+- name: set hostname
+  hostname: name={{ inventory_hostname }}
+
+- name: install userland packages (version independed)
+  yum: name={{ item }}
+  with_items:
+    - vim
+    - tcpdump
+    - lsof
+    - wget
+    - nmap
+    - telnet
+    - ftp
+    - mlocate
+    - screen
+    - rsync
+    - sysstat
+    - git
+    - man
+    - bind-utils
+    - net-tools
+
+- name: install userland packages (centos version 6 depended)
+  yum: name={{ item }}
+  with_items:
+    - jwhois
+    - openssh-clients
+  when:
+    - ansible_distribution == "CentOS"
+    - ansible_distribution_major_version == "6"
+
+- name: install userland packages (centos version 7 depended)
+  yum: name={{ item }}
+  with_items:
+    - whois
+  when:
+    - ansible_distribution == "CentOS"
+    - ansible_distribution_major_version == "7"
+
+- name: prereq packages for running ansible
+  yum: name={{ item }}
+  with_items:
+    - libselinux-python
+  when: 
+    - ansible_distribution == "CentOS"
+    - ansible_distribution_major_version == "7"
+

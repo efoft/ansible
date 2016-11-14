@@ -1,0 +1,39 @@
+---
+#- name: include var files
+#  include_vars: "{{ item }}"
+#  with_items:
+#  - defaults/main.yml
+#  - defaults/pass.yml
+
+- fail: msg="Dictionary bacula must be defined"
+  when: bacula is not defined
+
+- fail: msg="Dictionary key bacula.is_server must be either yes or no"
+  when: bacula.is_server is not defined or bacula.is_server not in ['yes','no']
+
+- name: bacula-fd director_name is set to host's fqdn since it is the server itself
+  set_fact:
+    bacula_director_name: "{{ ansible_fqdn }}"
+  when: bacula.is_server == 'yes'
+
+- name: bacula-fd director_name is set to dictionary value from vars
+  set_fact:
+    bacula_director_name: "{{ bacula.client.director_name }}"
+  when: bacula.is_server == 'no'
+
+- name: bacula-fd password is set to the same value as bacula-dir since the host is server itself
+  set_fact:
+    bacula_client_password: "{{ bacula.server.password }}"
+  when: bacula.is_server == 'yes'
+
+- name: bacula-fd password is set to dictionary value from vars
+  set_fact:
+    bacula_client_password: "{{ bacula.client.password }}"
+  when: bacula.is_server == 'no'
+
+- include: common.yml
+- include: client.yml
+
+- include: server.yml
+  when: bacula.is_server == 'yes'
+...

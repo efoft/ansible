@@ -1,0 +1,35 @@
+---
+- name: install required NM packages
+  yum: name={{ item }} state=installed
+  with_items:
+    - NetworkManager
+    - NetworkManager-glib
+
+- name: NM must use keyfile plugin
+  lineinfile: dest=/etc/NetworkManager/NetworkManager.conf regexp=^plugins= line=plugins=keyfile
+  notify:
+    - restart NM service
+
+- include: managed_interfaces.yml
+
+- name: build the list of existing NM connections
+  shell: >
+    ls -1 /etc/NetworkManager/system-connections
+  register: found_files
+
+- name: remove unmanaged connections
+  file: path=/etc/NetworkManager/system-connections/{{ item }} state=absent
+  with_items: "{{ found_files.stdout_lines }}"
+  when: item not in managed_interfaces
+  notify:
+    - restart NM service
+
+- name: connection for interface
+  template: src=nm_conn.j2 dest=/etc/NetworkManager/system-connections/{{ item.value.device }}
+  with_dict: "{{ network }}"
+  notify:
+    - restart NM service
+
+- name: enable and start NM service
+  service: name=NetworkManager enabled=yes state=started
+...

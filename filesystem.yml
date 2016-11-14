@@ -1,0 +1,33 @@
+---
+# creates logical volume, filesystem on it and mount
+#
+# === parameters ===
+# [vgname]  optional, default=sysvg
+# [lvname]  required
+# [lvsize]  required
+# [fstype]  optional, default=xfs
+# [fsopts]  optional, default=defauls
+# [mntdir]  required
+# [owner]   optional, default=root
+# [group]   optional, default=root
+# [dirmode] optional, default=0755
+# [setype]  optional
+# =================
+#
+# See all defaults in group_vars
+#
+- name: create lv
+  lvol: vg={{ vgname }} lv={{ lvname }} size={{ lvsize }}
+
+- name: mkfs
+  filesystem: fstype={{ fstype }} dev=/dev/{{ vgname }}/{{ lvname }} resizefs=yes
+
+- name: create mountpoint
+  file: dest={{ mntdir }} state=directory
+
+- name: mount
+  mount: name={{ mntdir }} src=/dev/{{ vgname }}/{{ lvname }} fstype={{ fstype }} opts={{ fsopts|d() }} state=mounted
+
+- name: amend ownership after mount
+  file: dest={{ mntdir }} owner={{ owner }} group={{ group }} mode={{ dirmode }} setype={{ setype|d() }}
+...

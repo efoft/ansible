@@ -1,0 +1,27 @@
+TYPE=Ethernet
+ONBOOT=yes
+NAME="{{ item.value.device }}"
+DEVICE="{{ item.value.device }}"
+{% if item.value.uuid is defined -%}
+UUID="{{ item.value.uuid }}"
+{% endif -%}
+BOOTPROTO=none
+IPV4_FAILURE_FATAL="no"
+IPADDR={{ item.value.ip }}
+PREFIX={{ item.value.prefix }}
+{% if item.value.gateway is defined -%}
+GATEWAY={{ item.value.gateway }}
+{% endif -%}
+{% for record in item.value.dns -%}
+DNS{{ loop.index }}={{ record }}
+{% endfor -%}
+IPV6INIT={{ ipv6 }}
+{% if ipv6 == 'yes' -%}
+IPV6_AUTOCONF="yes"
+IPV6_FAILURE_FATAL="no"
+{% endif -%}
+NM_CONTROLLED="no"
+USERCTL="no"
+{% if firewall == 'firewalld' -%}
+ZONE={{ item.value.zone }}
+{% endif -%}
