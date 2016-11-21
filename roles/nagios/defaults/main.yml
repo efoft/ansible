@@ -1,0 +1,6 @@
+---
+nagios:
+  is_server: no
+  client:
+    server: 127.0.0.1
+...

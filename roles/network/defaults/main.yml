@@ -5,4 +5,7 @@ netcfg: "ifcfg"
 ipv6: "no"
 # if to turn on IP forwarding: yes,no
 router: "no"
+# whether to use firewalld or classic iptables
+# # values: firewalld, iptables, nofirewall
+firewall: "firewalld"
 ...

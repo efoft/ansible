@@ -1,4 +1,12 @@
 ---
+- fail: msg="Variable mongodb.lvsize must be defined"
+  when: mongodb.lvsize is not defined
+
+- fail: msg="Dictionary key network.intif.ip is not defined, cannot listen on intip"
+  when:
+    - mongodb.listen == 'intip'
+    - network.intif.ip is not defined
+
 - name: create mongodb yum repo
   copy: src=mongodb.repo.j2 dest=/etc/yum.repos.d/mongodb.repo
 
@@ -9,40 +17,36 @@
     - mongodb-org-server
 
 - name: create data filesystem
-  include: filesystem.yml lvname=mongodata lvsize={{ mongo_lvsize }} mntdir=/var/lib/mongo owner=mongod group=mongod setype=mongod_var_lib_t
+  include: filesystem.yml lvname=mongodata lvsize={{ mongodb.lvsize }} mntdir=/var/lib/mongo owner=mongod group=mongod setype=mongod_var_lib_t
 
 - name: increase soft rlimits
   lineinfile: dest=/etc/security/limits.d/20-nproc.conf regexp="mongod[ \t]soft" line="mongod soft nproc {{ nproc_soft_limit }}"
   notify: restart mongod
 
-- name: tuned no-thp profile (directory)
-  file: dest=/etc/tuned/virtual-guest-no-thp state=directory
-  when: tuned_used
+- include: tuned.yml
+  when: tuned_used is defined
 
-- name: tuned no-thp profile (files)
-  copy: src={{ item.src }} dest=/etc/tuned/virtual-guest-no-thp/{{ item.dest }} mode={{ item.mode }}
-  with_items:
-    - { src: 'virtual-guest-no-thp.tuned.conf', dest: 'tuned.conf', mode: '0644' }
-    - { src: 'thp-no-defrag.script.sh', dest: 'script.sh', mode: '0755' }
-  when: tuned_used
-
-- name: tuned no-thp profile activate
-  command: /usr/sbin/tuned-adm profile virtual-guest-no-thp
-  when: tuned_used
-  
 - name: mongod config
   template: src=mongod.conf.j2 dest=/etc/mongod.conf
-  notify:
-    - restart mongod
+  notify: restart mongod
+
+- name: prepare keyfile
+  copy: src=mongod.keyfile.j2 dest=/etc/mongod.keyfile owner=mongod group=root mode=0400 force=no
+  when: 
+    - mongodb.auth    == 'enabled'
+    - mongodb.keyfile != 'none'
+  notify: restart mongod
 
 - name: mongod service enabled and running
   service: name=mongod enabled=yes state=started
 
+- include: is_enabled_firewalld.yml
+
 - name: allow connection to mongo via firewalld
   firewalld: zone=internal port=27017/tcp permanent=true state=enabled
   when:
-    - intif is defined
-    - firewalld_used is defined
+    - network.intif is defined
+    - firewalld_enabled
   notify:
-    - reload firewall
+    - reload firewalld
 ...

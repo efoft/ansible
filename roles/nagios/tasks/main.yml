@@ -1,0 +1,7 @@
+---
+- include: client_lnx.yml
+
+- include: server.yml
+  when: 
+    - nagios.is_server == 'yes'
+...

@@ -1,12 +1,35 @@
 nproc_soft_limit: 32000
-mongo_port: 27017
 
-# on which IPs to listen: all, intip, loopback
-mongo_listen: all
-
-# # engine: mmapv1, wiredTiger
-mongo_engine: wiredTiger
-
-# # auth
-mongo_auth: disabled
-
+# === params ===
+# [*listen*]
+# - loopback = 127.0.0.1 (default)
+# - intip    = used dictionary key network.intif.ip (error if not defined)
+# - all
+#
+# [*engine*]
+# - mmapv1
+# - wiredTiger
+#
+# [*auth*]
+# - enabled
+# - disabled (in this case *keyfile* is ignored)
+#
+# [*keyfile*]
+# - path to file (recommended is /etc/mongod.keyfile)
+# - none = not used
+# Used only if *auth* is enabled.
+# Required for replication set with auth.
+# This file is created with dummy value but proper permissions.
+# IMPORTANT! Fill it with new generated value:
+# openssl rand -base64 756 > /etc/mongod.keyfile
+#
+# [*replSet*]
+# Replication Set name. But me the same for all replication members.
+#
+mongodb:
+  port:    27017
+  listen:  loopback
+  engine:  wiredTiger
+  auth:    disabled
+  keyfile: /etc/mongod.keyfile
+  replSet: none

@@ -1,0 +1,19 @@
+---
+- name: check if firewalld is enabled
+  shell: >
+    systemctl is-enabled firewalld
+  register: firewalld_is_enabled
+  failed_when: firewalld_is_enabled.rc != 0 and firewalld_is_enabled.rc != 1
+
+- name: set fact that firewalld is enabled
+  set_fact:
+    firewalld_enabled: true
+  when: firewalld_is_enabled.rc == 0
+  run_once: true
+
+- name: set fact that firewalld is not enabled
+  set_fact:
+    firewalld_enabled: false
+  when: firewalld_is_enabled.rc == 1
+  run_once: true
+...

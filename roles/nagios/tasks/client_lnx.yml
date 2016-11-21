@@ -1,0 +1,52 @@
+---
+- name: install nagios client & basic plugins
+  yum: name={{ item }} state=installed
+  with_items:
+    - nrpe
+    - nagios-plugins-disk
+    - nagios-plugins-procs
+    - nagios-plugins-load
+    - nagios-plugins-users
+    - nagios-plugins-swap
+    - nagios-plugins-perl
+
+- fail: msg="nagios.client.mysqld.user & nagios.client.mysqld.pass are required to monitor myslqd"
+  when:
+    - mysqld is defined and mysqld.active == 'yes'
+    - nagios.client.mysqld.user is not defined or nagios.client.mysqld.pass is not defined
+
+- name: install mysql plugin
+  yum: name=nagios-plugins-mysql state=installed
+  when: mysqld is defined and mysqld.active == 'yes'
+
+- name: check if linux raid is used
+  shell: >
+    cat /proc/mdstat | egrep 'md[0-9]*'
+  register: md_devices_found
+  failed_when: md_devices_found == 2
+
+- name: install linux_raid plugin
+  copy: src=check_linux_raid dest=/usr/lib64/nagios/plugins/check_linux_raid owner=root group=root mode=0755
+  when: md_devices_found.rc == 0
+
+- name: get list of mounted filesystems
+  shell: >
+    df -l -P -x tmpfs -x devtmpfs | tail -n +2 | awk '{ print $6 }'
+  register: mounted_filesystems
+
+- name: nrpe config
+  template: src=nrpe.cfg.j2 dest=/etc/nagios/nrpe.cfg owner=root group=root mode=0644
+  notify: restart nrpe
+
+- name: nrpe service enabled & running
+  service: name=nrpe state=running enabled=yes
+
+- include: is_enabled_firewalld.yml
+
+- name: allow network communication via firewall
+  firewalld: rich_rule="rule family=ipv4 source address={{ nagios.client.server }} port port=5666 protocol=tcp accept" permanent=true state=enabled zone=internal
+  when: 
+    - network.intif is defined
+    - firewalld_enabled
+  notify: reload firewalld
+...

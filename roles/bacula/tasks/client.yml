@@ -9,11 +9,16 @@
 - name: bacula-fd service enabled and running
   service: name=bacula-fd enabled=yes state=started
 
-- name: allow connection to bacula via firewalld
-  firewalld: zone=internal port=9102/tcp permanent=true state=enabled
+- include: is_enabled_firewalld.yml
+
+- name: allow network communication via firewall
+  firewalld: rich_rule="rule family=ipv4 source address={{ bacula.client.server }} port port=9102 protocol=tcp accept" permanent=true state=enabled zone=internal
   when:
-    - intif is defined
-    - firewalld_used is defined
-  notify:
-    - reload firewall
+    - network.intif is defined
+    - firewalld_enabled
+  notify: reload firewalld
+
+- name: prepare lvm backup script
+  copy: src=mongolvmbackup.sh dest=/etc/bacula/mongolvmbackup.sh owner=root group=bacula mode=0750 setype=bacula_unconfined_script_exec_t
+  when: mongodb is defined
 ...

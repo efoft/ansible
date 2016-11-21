@@ -1,0 +1,13 @@
+---
+- name: tuned no-thp profile (directory)
+  file: dest=/etc/tuned/virtual-guest-no-thp state=directory
+
+- name: tuned no-thp profile (files)
+  copy: src={{ item.src }} dest=/etc/tuned/virtual-guest-no-thp/{{ item.dest }} mode={{ item.mode }}
+  with_items:
+    - { src: 'virtual-guest-no-thp.tuned.conf', dest: 'tuned.conf', mode: '0644' }
+    - { src: 'thp-no-defrag.script.sh', dest: 'script.sh', mode: '0755' }
+
+- name: tuned no-thp profile activate
+  command: /usr/sbin/tuned-adm profile virtual-guest-no-thp
+...

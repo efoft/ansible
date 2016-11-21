@@ -7,20 +7,28 @@ storage:
   dbPath: /var/lib/mongo
   journal:
     enabled: true
-  engine: {{ mongo_engine }}
+  engine: {{ mongodb.engine }}
 
 processManagement:
   fork: true  # fork and run in background
   pidFilePath: /var/run/mongodb/mongod.pid  # location of pidfile
 
 net:
-  port: {{ mongo_port }}
-{% if mongo_listen == 'loopback' %}
+  port: {{ mongodb.port }}
+{% if mongodb.listen == 'loopback' %}
   bindIp: 127.0.0.1
 {% endif %}
-{% if mongo_listen == 'intip' %}
-  bindIp: 127.0.0.1,{{ intip }}
+{% if mongodb.listen == 'intip' %}
+  bindIp: 127.0.0.1,{{ network.intif.ip }}
 {% endif %}
 
 security:
-  authorization: {{ mongo_auth }}
+  authorization: {{ mongodb.auth }}
+{% if mongodb.auth == 'enabled' and mongodb.keyfile != 'none' %}
+  keyFile: {{ mongodb.keyfile }}
+{% endif %}
+
+{% if mongodb.replSet != 'none' %}
+replication:
+  replSetName: {{ mongodb.replSet }}
+{% endif %}
