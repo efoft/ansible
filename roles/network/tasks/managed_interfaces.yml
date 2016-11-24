@@ -5,6 +5,10 @@
   with_dict: "{{ network }}"
   register: enum
 
+- name: clean managed_interfaces var
+  set_fact:
+    managed_interfaces: []
+
 - name: build the list of managed network interfaces
   set_fact:
     managed_interfaces: "{{ managed_interfaces|d([]) + [ item.stdout ] }}"

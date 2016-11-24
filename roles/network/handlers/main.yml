@@ -13,4 +13,8 @@
 
 - name: restart network
   service: name=network state=restarted
+
+- name: restart network and NM
+  shell: >
+    systemctl restart network && systemctl restart NetworkManager
 ...

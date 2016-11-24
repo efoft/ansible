@@ -25,10 +25,15 @@
     - restart NM service
 
 - name: connection for interface
-  template: src=nm_conn.j2 dest=/etc/NetworkManager/system-connections/{{ item.value.device }}
+  template: src=nm_conn.j2 dest=/etc/NetworkManager/system-connections/{{ item.value.device }} owner=root group=root mode=0600
   with_dict: "{{ network }}"
   notify:
     - restart NM service
+
+- name: disable dhcp on ifcfg
+  lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-{{ item }} regexp="BOOTPROTO=" line="BOOTPROTO=none"
+  with_items: "{{ managed_interfaces }}"
+  notify: restart network and NM
 
 - name: enable and start NM service
   service: name=NetworkManager enabled=yes state=started
