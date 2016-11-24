@@ -10,16 +10,24 @@ network:
     zone:    internal
 
 netcfg: "nm"
-ipv6: "no"
-router: "no"
 
-# whether to use firewalld or classic iptables
-# values: firewalld, iptables, nofirewall
-firewall: firewalld
-
-vgname: "sysvg"
+vgname: "vg2"
+mongodb:
+  listen: all
+  lvsize: 10G
 
 bacula:
   is_server: "no"
   client:
     director_name: "cula-director"
+    server: 10.1.1.250
+
+nagios:
+  client:
+    server: 10.1.1.250
+    mysqld:
+      user: "nagios"
+      pass: "nagioS"
+
+mysqld:
+  active: "yes"
