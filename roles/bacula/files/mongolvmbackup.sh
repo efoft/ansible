@@ -100,12 +100,14 @@ snap_start() {
   if [ $is_mounted -eq 0 ]
   then
     echo "Found that $MOUNTPOINT is already mounted, trying to unmount it..."
-    umount -f $MOUNTPOINT
-    if [ "$?" -ne 0 ]
-    then
-      echo "Cannot unmount $MOUNTPOINT, exiting..."
-      exit 2
-    fi
+    snap_unmount
+  fi
+
+  # Check if snapshot already exists
+  if lvdisplay "/dev/$vgroup/$snapvol" >/dev/null 2>/dev/null
+  then
+    echo "Snapshot volume /dev/$vgroup/$snapvol already exists, trying to remove it"
+    snap_remove
   fi
   
   # Create the snapshot
@@ -140,16 +142,19 @@ snap_start() {
   exit 0
 }
 
-snap_stop() {
-  # Unmount & remove temp snapshot
+snap_unmount() {
+  # Unmount snapshot
   echo "Unmounting..."
   umount -fv "$MOUNTPOINT"
-  if [ "$?" -ne 0 ]
+  retval=$?
+  if [ "$retval" -ne 0 -a "$retval" -ne 32 ]
   then
     echo "Unmounting snapshot failed, exiting..."
     exit 4
   fi
-  echo
+}
+
+snap_remove() {
   echo "Removing temporary volume..."
   lvremove -f "/dev/${vgroup}/${snapvol}"
   if [ "$?" -ne 0 ]
@@ -157,6 +162,10 @@ snap_stop() {
     echo "Removing snapshot failed, exiting..."
     exit 5
   fi
+}
+
+snap_stop() {
+  snap_unmount && snap_remove
   exit 0
 }
 
