@@ -2,16 +2,21 @@
 
 - hosts: all
   roles:
-#  - role: common
-#  - role: network
-#  - role: tune
-#  - role: security
+  - role: common
+  - role: network
+  - role: tune
+  - role: security
+  - role: repos
 
-#- hosts: mongodb_servers
-#  roles:
-#    - role: mongodb
+- hosts: mongodb
+  roles:
+    - role: mongodb
 
 - hosts: bacula
   roles:
     - role: bacula
+
+- hosts: nagios
+  roles:
+    - role: nagios
 ...
